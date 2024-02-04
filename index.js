@@ -1,22 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var util_1 = require("./util/util");
-/*
-console.log(fs.open);
-console.log(process.argv[2]);
-const key = randomBytes(24);
-*/
-if (process.argv.length < 2) {
-    throw "file name required";
+if (process.argv.length < 3) {
+    console.error('Us');
 }
-nodeEncrypt();
-function nodeEncrypt() {
-    if (process.argv[2] == '-en') {
-        (0, util_1.encryptFile)(process.argv[3], process.argv[4]);
+var CLI_OPTION = process.argv[2];
+var FILE_NAME_ARGUMENT = process.argv[3];
+var password = prompt('password: ')
+    .then(function (password) { return nodeEncrypt(password); });
+function nodeEncrypt(password) {
+    if (CLI_OPTION == '-en') {
+        (0, util_1.encryptFile)(FILE_NAME_ARGUMENT, password);
     }
-    else if (process.argv[2] == '-de') {
-        (0, util_1.decryptFile)(process.argv[3], process.argv[4]);
+    else if (CLI_OPTION == '-de') {
+        (0, util_1.decryptFile)(FILE_NAME_ARGUMENT, password);
     }
+}
+function prompt(question) {
+    var data = '';
+    return new Promise(function (resolve, reject) {
+        process.stdin.resume();
+        process.stdout.write(question);
+        //process.stdin.on('keypress', e => console.log('keyp'));
+        //process.stdin.on('data', chunk => data = data + chunk);
+        process.stdin.on('data', function (data) { process.stdin.pause(); resolve(data.toString().trim()); });
+        process.stdin.on('error', function (err) { return reject(err); });
+    });
 }
 /*
 function hexToBuffer(hexString: string): ArrayBuffer {
