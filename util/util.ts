@@ -24,7 +24,7 @@ function encryptFile(filePath: string, password: string) {
         // first puts the marker ENCRYPTED_TAG,
         // then hex string converted from buffer iv 
         // lastly the encrypted string back to file
-        .then(data => writeFileContent(filePath, ENCRYPTED_TAG + data.iv.toString('hex') + DATA_IV_DELIMITER + data.encryptedString))
+        .then(data => writeFileContent(filePath, constructEncryptedData(data, ENCRYPTED_TAG, DATA_IV_DELIMITER)))
         .catch(e => console.error('File is already Encrypted'));
 
 }
@@ -40,14 +40,8 @@ function decryptFile(filePath: string, password: string) {
 
             throw 'Decrypted';
         })
-        //first IV_BYTE_SIZE bytes of the data should be iv
-        // because in hex string, each byte take up two characters, position where actual
-        // file data starts should be IV_BYTE_SIZE * 2
-        //
-        //
-        .then(data => decrypt(data.split(DATA_IV_DELIMITER)[1],
-            password,
-            Buffer.from(data.split(DATA_IV_DELIMITER)[0], 'hex')))
+        .then(data => parseEncryptedData(data, DATA_IV_DELIMITER))
+        .then(data => decrypt(data.encryptedString, password, data.iv))
         .then(data => logger('decrypted content', data))
 
         .then(data => writeFileContent(filePath, data))
@@ -56,6 +50,21 @@ function decryptFile(filePath: string, password: string) {
 
 }
 
+function constructEncryptedData(encryptedDataObj: {encryptedString: string, iv: Buffer},
+    ENCRYPTED_TAG: string,
+    DATA_IV_DELIMITER: string): string {
+
+    return ENCRYPTED_TAG + encryptedDataObj.iv.toString('hex') + DATA_IV_DELIMITER + encryptedDataObj.encryptedString;
+
+}
+
+function parseEncryptedData(data: string,
+    DATA_IV_DELIMITER: string): {encryptedString: string, iv: Buffer} {
+    return {
+        encryptedString: data.split(DATA_IV_DELIMITER)[1],
+        iv: Buffer.from(data.split(DATA_IV_DELIMITER)[0], 'hex')
+    }
+}
 function logger(description: string, params: any) {
     console.log(description, params);
     return params;
