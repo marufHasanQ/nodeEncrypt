@@ -1,5 +1,5 @@
 
-import {randomBytes, scryptSync, encrypt, decrypt} from '../cryptoUtil/cryptoUtil'
+import {encrypt, decrypt} from '../cryptoUtil/cryptoUtil'
 import {getFileContent, writeFileContent} from '../fileUtil/fileUtil'
 
 
@@ -41,7 +41,7 @@ function decryptFile(filePath: string, password: string) {
             throw 'Decrypted';
         })
         .then(data => parseEncryptedData(data, DATA_IV_DELIMITER))
-        .then(data => decrypt(data.encryptedString, password, data.iv))
+        .then(data => decrypt(data.encryptedString, password, data.iv, data.authTag))
         .then(data => logger('decrypted content', data))
 
         .then(data => writeFileContent(filePath, data))
@@ -50,19 +50,20 @@ function decryptFile(filePath: string, password: string) {
 
 }
 
-function constructEncryptedData(encryptedDataObj: {encryptedString: string, iv: Buffer},
+function constructEncryptedData(encryptedDataObj: {encryptedString: string, iv: Buffer, authTag: Buffer},
     ENCRYPTED_TAG: string,
     DATA_IV_DELIMITER: string): string {
 
-    return ENCRYPTED_TAG + encryptedDataObj.iv.toString('hex') + DATA_IV_DELIMITER + encryptedDataObj.encryptedString;
+    return ENCRYPTED_TAG + encryptedDataObj.iv.toString('hex') + DATA_IV_DELIMITER + encryptedDataObj.encryptedString + DATA_IV_DELIMITER + encryptedDataObj.authTag.toString('hex');
 
 }
 
 function parseEncryptedData(data: string,
-    DATA_IV_DELIMITER: string): {encryptedString: string, iv: Buffer} {
+    DATA_IV_DELIMITER: string): {encryptedString: string, iv: Buffer, authTag: Buffer} {
     return {
         encryptedString: data.split(DATA_IV_DELIMITER)[1],
-        iv: Buffer.from(data.split(DATA_IV_DELIMITER)[0], 'hex')
+        iv: Buffer.from(data.split(DATA_IV_DELIMITER)[0], 'hex'),
+        authTag: Buffer.from(data.split(DATA_IV_DELIMITER)[2], 'hex')
     }
 }
 function logger(description: string, params: any) {
