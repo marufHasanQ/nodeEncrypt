@@ -33,7 +33,6 @@ function prompt(question) {
         process.stdin.resume();
         process.stdout.write(question);
 
-        //process.stdin.on('keypress', e => console.log('keyp'));
         //process.stdin.on('data', chunk => data = data + chunk);
         process.stdin.on('data', (data) => {process.stdin.pause(); resolve(data.toString().trim())})
         process.stdin.on('error', err => reject(err));

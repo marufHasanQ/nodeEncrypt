@@ -25,7 +25,7 @@ function encryptFile(filePath: string, password: string) {
         // then hex string converted from buffer iv 
         // lastly the encrypted string back to file
         .then(data => writeFileContent(filePath, constructEncryptedData(data, ENCRYPTED_TAG, DATA_IV_DELIMITER)))
-        .catch(e => console.error('File is already Encrypted'));
+        .catch(e => console.error(e, 'File is already Encrypted'));
 
 }
 
