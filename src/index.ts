@@ -6,22 +6,31 @@ if (process.argv.length < 4) {
 }
 
 const CLI_OPTION = process.argv[2];
-const FILE_NAME_ARGUMENT = process.argv[3];
+const FILE_NAME_ARRAY = process.argv.slice(3);
+
 
 const password = prompt('password: ')
-    .then((password: string) => nodeEncrypt(password));
+    .then((password: string) => {
+
+        nodeEncrypt(password, FILE_NAME_ARRAY)
+    });
 
 
 
-function nodeEncrypt(password: string) {
+function nodeEncrypt(password: string, FILE_NAME_ARRAY: string[]) {
+
+    FILE_NAME_ARRAY.forEach(v => nodeEncryptSingleFile(v, password));
+}
+
+function nodeEncryptSingleFile(filePath: string, password: string) {
 
 
     if (CLI_OPTION == '-en') {
-        encryptFile(FILE_NAME_ARGUMENT, password)
+        encryptFile(filePath, password)
 
     }
     else if (CLI_OPTION == '-de') {
-        decryptFile(FILE_NAME_ARGUMENT, password)
+        decryptFile(filePath, password)
     }
 
 }

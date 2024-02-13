@@ -13,7 +13,7 @@ function encryptFile(filePath: string, password: string) {
         .then(data => {
             let isEncrypted = checkEncrypted(data).length == 2;
             if (isEncrypted)
-                throw 'File is already Encrypted';
+                throw ' is already Encrypted';
 
             return checkEncrypted(data)[0];
         })
@@ -21,7 +21,8 @@ function encryptFile(filePath: string, password: string) {
         .then(data => encrypt(data, password))
         .then(data => logger('encrypted object', data))
         .then(data => writeFileContent(filePath, constructEncryptedData(data, ENCRYPTED_TAG, DATA_IV_DELIMITER)))
-        .catch(e => console.error(e));
+        .then(data => logger(filePath, ' is encrypted.'))
+        .catch(e => console.error(filePath, e));
 
 }
 
@@ -36,7 +37,7 @@ function decryptFile(filePath: string, password: string) {
             if (isEncrypted)
                 return checkEncrypted(data)[1];
 
-            throw 'Decrypted';
+            throw ' is already decrypted';
         })
 
         .then(data => parseEncryptedData(data, DATA_IV_DELIMITER))
@@ -44,7 +45,8 @@ function decryptFile(filePath: string, password: string) {
         .then(data => logger('decrypted content', data))
 
         .then(data => writeFileContent(filePath, data))
-        .catch(e => console.error(e, 'File is already decrypted'));
+        .then(data => logger(filePath, ' is decrypted.'))
+        .catch(e => console.error(filePath, e));
 
 
 }
