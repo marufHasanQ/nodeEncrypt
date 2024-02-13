@@ -1,19 +1,19 @@
 import {encryptFile, decryptFile} from './util/util';
 
 
-if (process.argv.length < 3) {
-    console.error('Us');
+if (process.argv.length < 4) {
+    throw ('missing arguments : ' + process.argv);
 }
 
 const CLI_OPTION = process.argv[2];
 const FILE_NAME_ARGUMENT = process.argv[3];
 
 const password = prompt('password: ')
-    .then((password) => nodeEncrypt(password));
+    .then((password: string) => nodeEncrypt(password));
 
 
 
-function nodeEncrypt(password) {
+function nodeEncrypt(password: string) {
 
 
     if (CLI_OPTION == '-en') {
@@ -27,7 +27,7 @@ function nodeEncrypt(password) {
 }
 
 
-function prompt(question) {
+function prompt(question: string): Promise<string> {
     let data = '';
     return new Promise((resolve, reject) => {
         process.stdin.resume();

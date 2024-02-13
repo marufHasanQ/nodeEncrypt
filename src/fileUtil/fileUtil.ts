@@ -18,6 +18,7 @@ function getFileContent(filePath: string): Promise<string> {
                     resolve(data);
                 })
             })
+            .catch(e => console.log('file doesnt exist'))
     )
 
 }

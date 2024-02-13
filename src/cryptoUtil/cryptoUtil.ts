@@ -3,9 +3,8 @@ import {randomBytes, scryptSync, createDecipheriv, createCipheriv} from 'crypto'
 const IV_BYTE_SIZE = 16;
 const KEY_SIZE = 32;
 const ALGO = 'aes-256-gcm';
-const iv = randomBytes(IV_BYTE_SIZE);
 
-function decrypt(encryptedContent: string, password: string, iv: Buffer | string, authTag: Buffer): Promise<string> {
+function decrypt(password: string, encryptedContent: string, iv: Buffer | string, authTag: Buffer): Promise<string> {
     const key = scryptSync(password, 'salt', KEY_SIZE); //create key
     //console.log(encryptedContent, key, iv);
     const decipher = createDecipheriv(ALGO, key, iv);
@@ -18,11 +17,17 @@ function decrypt(encryptedContent: string, password: string, iv: Buffer | string
 
     return new Promise((resolve, reject) => {
         decipher.on('end', () => resolve(decrypted));
+        decipher.on('error', (e) => reject(e));
     })
 }
 
 function encrypt(fileContent: string, password: string): Promise<object> {
+    // create fixed size hash as buffer from the password
+    // here same salt for every password is acceptable since we are using
+    // it to get a fixed length key and not for storing purpose
     const key = scryptSync(password, 'salt', KEY_SIZE); //create key
+
+    const iv = randomBytes(IV_BYTE_SIZE);
     const cipher = createCipheriv(ALGO, key, iv);
     let encrypted = '';
     cipher.setEncoding('hex');
@@ -38,4 +43,3 @@ function encrypt(fileContent: string, password: string): Promise<object> {
 }
 
 export {randomBytes, scryptSync, encrypt, decrypt}
-

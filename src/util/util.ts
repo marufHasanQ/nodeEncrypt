@@ -1,4 +1,3 @@
-
 import {encrypt, decrypt} from '../cryptoUtil/cryptoUtil'
 import {getFileContent, writeFileContent} from '../fileUtil/fileUtil'
 
@@ -10,38 +9,38 @@ function encryptFile(filePath: string, password: string) {
 
     //get content of  the file
     getFileContent(filePath)
-        //check if the file is already encrypted or not 
+        //check if the file is already encrypted or not
         .then(data => {
             let isEncrypted = checkEncrypted(data).length == 2;
             if (isEncrypted)
-                throw 'Encrypted';
+                throw 'File is already Encrypted';
 
             return checkEncrypted(data)[0];
         })
-        // encrypt the data 
+        // encrypt the data
         .then(data => encrypt(data, password))
         .then(data => logger('encrypted object', data))
-        // first puts the marker ENCRYPTED_TAG,
-        // then hex string converted from buffer iv 
-        // lastly the encrypted string back to file
         .then(data => writeFileContent(filePath, constructEncryptedData(data, ENCRYPTED_TAG, DATA_IV_DELIMITER)))
-        .catch(e => console.error(e, 'File is already Encrypted'));
+        .catch(e => console.error(e));
 
 }
 
 function decryptFile(filePath: string, password: string) {
     // get the content of the file
     getFileContent(filePath)
-        //check if the file is already decrypted or not 
+        //check if the file is already decrypted or not
         .then(data => {
             let isEncrypted = checkEncrypted(data).length == 2;
+            //if the file is not decrypted then return content of the file without ENCRYPTED_TAG portion.
+            //otherwise throw error
             if (isEncrypted)
                 return checkEncrypted(data)[1];
 
             throw 'Decrypted';
         })
+
         .then(data => parseEncryptedData(data, DATA_IV_DELIMITER))
-        .then(data => decrypt(data.encryptedString, password, data.iv, data.authTag))
+        .then(data => decrypt(password, data.encryptedString, data.iv, data.authTag))
         .then(data => logger('decrypted content', data))
 
         .then(data => writeFileContent(filePath, data))
@@ -54,6 +53,11 @@ function constructEncryptedData(encryptedDataObj: {encryptedString: string, iv: 
     ENCRYPTED_TAG: string,
     DATA_IV_DELIMITER: string): string {
 
+    // first puts the marker ENCRYPTED_TAG, tells the program if the file is already encrypted or not
+    // then hex string converted from buffer iv
+    // then  the encrypted string
+    // lastly the authentication tag
+    //
     return ENCRYPTED_TAG + encryptedDataObj.iv.toString('hex') + DATA_IV_DELIMITER + encryptedDataObj.encryptedString + DATA_IV_DELIMITER + encryptedDataObj.authTag.toString('hex');
 
 }
